@@ -1,44 +1,44 @@
-1.  Analyzing Student Performance:  
-Scenario: You are analyzing factors that affect student performance in a standardized test. You collect data on study hours, attendance rates, and socioeconomic background.  
-Question: How would you set up your linear regression model? What considerations would you make regarding the interpretation of coefficients in this context?
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
 
+# Sample DataFrame (replace with actual data)
+data = {
+    'study_hours': [10, 12, 15, 8, 9, 14, 11],
+    'attendance_rate': [85, 90, 95, 80, 82, 88, 91],
+    'socioeconomic_background': ['low', 'medium', 'high', 'low', 'medium', 'high', 'medium'],
+    'test_score': [78, 82, 85, 70, 74, 88, 81]
+}
 
-SOLUTION:
+df = pd.DataFrame(data)
 
-To set up a linear regression model for analyzing factors affecting student performance on a standardized test, we would use a model with student test scores as the dependent variable and study hours, attendance rates, and socioeconomic background as independent variables. Here's how the setup might look and considerations for interpreting coefficients in this context:
+# Convert categorical variable to dummy variables
+df = pd.get_dummies(df, columns=['socioeconomic_background'], drop_first=True)
 
-Model Setup
-1. Define the dependent variable:  
-   - \( Y \) (student test scores on the standardized test).
+# Split data into features (X) and target (y)
+X = df.drop('test_score', axis=1)
+y = df['test_score']
 
-2. Define the independent variables:
-   - \( X_1 \): Study hours (continuous variable representing time spent studying).
-   - \( X_2 \): Attendance rate (continuous variable representing percentage of class attendance).
-   - \( X_3 \): Socioeconomic background (may be coded as ordinal or categorical, depending on available data, or transformed into a continuous variable if represented by an index like income level).
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-   So, the model would be:
-   \[
-   Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon
-   \]
-   where \( \beta_0 \) is the intercept, \( \beta_1 \), \( \beta_2 \), and \( \beta_3 \) are the coefficients for each independent variable, and \( \epsilon \) is the error term.
+# Initialize and train the Linear Regression model
+model = LinearRegression()
+model.fit(X_train, y_train)
 
-Considerations for Interpretation of Coefficients
+# Predict on test data
+y_pred = model.predict(X_test)
 
-1. Interpretation of \( \beta_1 \) (study hours):
-   - \( \beta_1 \) represents the change in test scores for each additional hour of study, holding other variables constant.
-   - If \( \beta_1 \) is positive, it indicates that more study hours are associated with higher test scores. However, we should consider that study hours might have diminishing returns (non-linear effect) on performance if not modeled correctly.
+# Print coefficients and intercept
+print("Coefficients:", model.coef_)
+print("Intercept:", model.intercept_)
 
-2. Interpretation of \( \beta_2 \) (attendance rate):
-   - \( \beta_2 \) indicates the expected change in test scores for each additional percentage point in attendance rate, assuming all other factors remain constant.
-   - We should note that attendance may not directly cause better performance but could correlate with other unmeasured factors like motivation or support from teachers.
+# Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+print("Mean Squared Error:", mse)
+print("R-squared:", r2)
 
-3. Interpretation of \( \beta_3 \) (socioeconomic background):
-   - \( \beta_3 \) represents the effect of socioeconomic background on test scores. If it's a categorical variable, we interpret it based on the coding used (e.g., if high SES = 1, low SES = 0, then \( \beta_3 \) represents the difference in scores between high and low SES).
-   - Socioeconomic background often has complex, non-linear effects, and we may consider interactions with other variables (e.g., SES may affect the effectiveness of study hours).
-
-4. Multicollinearity:
-   - We should assess if study hours, attendance rate, and socioeconomic background are correlated, as high multicollinearity could distort coefficient estimates.
-
-5. Assumptions of Linear Regression:
-   - We need to check that residuals are normally distributed and that there is homoscedasticity (constant variance in errors).
-   - It’s also essential to assess for omitted variable bias, as other unmeasured factors might significantly impact test scores.
